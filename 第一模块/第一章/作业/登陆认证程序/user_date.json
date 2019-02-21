@@ -1,1 +1,14 @@
-{"micheal": {"status": false, "password": "123456"}, "maraia": {"status": true, "password": "4008208820"}}
+{
+  "micheal": {
+    "status": true,
+    "password": "123456"
+  },
+  "maraia": {
+    "status": true,
+    "password": "4008208820"
+  },
+  "tom": {
+    "status": false,
+    "password": "123321"
+  }
+}

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登陆认证程序</title>
+    <link rel="stylesheet" href="https://stackedit.io/style.css"/>
+</head>
+
+<body class="stackedit">
+<div class="stackedit__html"><h2><a id="_0"></a>程序的实现的功能</h2>
+    <pre><code> 1. 让用户输入用户名密码
+ 2. 认证成功后显示欢迎信息、程序结束
+ 3. 输错三次后退出程序
+ 4. 可以支持多个用户登录
+ 5. 用户3次认证失败后，退出程序，再次启动程序尝试登录时，还是锁定状态
+</code></pre>
+    <h2><a id="_6"></a>程序的启动方式</h2>
+    <p>在pycharm中运行</p>
+    <ul>
+        <li>打开登录认证程序文件夹</li>
+        <li>点击打开login.py</li>
+        <li>按Ctrl + Shift + F10</li>
+    </ul>
+    <h2><a id="_11"></a>登录用户信息</h2>
+
+    <table>
+        <thead>
+        <tr>
+            <th>用户名</th>
+            <th>密码</th>
+            <th>状态</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>micheal</td>
+            <td>123456</td>
+            <td>未锁定</td>
+        </tr>
+        <tr>
+            <td>maraia</td>
+            <td>4008208820</td>
+            <td>未锁定</td>
+        </tr>
+        <tr>
+            <td>tom</td>
+            <td>123321</td>
+            <td>锁定</td>
+        </tr>
+        </tbody>
+    </table>
+    <h2><a id="_18"></a>程序的运行效果</h2>
+    <ol>
+        <li>密码正确，且未被锁定<br>
+            <img src="https://img-blog.csdnimg.cn/20190221104753324.png" alt="在这里插入图片描述"></li>
+        <li>密码输入错误三次被锁定<br>
+            <img src="https://img-blog.csdnimg.cn/2019022110464070.png" alt="用户被锁定"></li>
+        <li>登陆的用户是锁定状态<br>
+            <img src="https://img-blog.csdnimg.cn/2019022110450327.png" alt="在这里插入图片描述"></li>
+    </ol>
+    <h2><a id="_25"></a>流程图</h2>
+    <p>
+        <img src="https://img-blog.csdnimg.cn/20190221110141304.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3JheW1vbmQ1MzE=,size_16,color_FFFFFF,t_70"
+             alt="在这里插入图片描述"></p>
+</div>
+</body>
+
+</html>

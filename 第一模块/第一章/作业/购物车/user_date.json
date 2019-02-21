@@ -1,0 +1,16 @@
+{
+  "micheal": {
+    "password": "123123",
+    "salary": 134,
+    "goods": [
+      "\u7f8e\u5973"
+    ]
+  },
+  "tom": {
+    "password": "43214321",
+    "salary": 4281,
+    "goods": [
+      "\u6e38\u8247"
+    ]
+  }
+}
