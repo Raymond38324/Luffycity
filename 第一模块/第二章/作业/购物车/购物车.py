@@ -69,8 +69,8 @@ def register(username, password):
     try:
         salary = int(input("输入工资:"))  # 获取用户输入的工资
         user_date = {"password": password, "salary": salary, "goods": []}  # 初始化用户信息字典
-        shopping(user_date, username) # 购物
-        display_menu(user_date, username) # 进入主菜单
+        shopping(user_date, username)  # 购物
+        display_menu(user_date, username)  # 进入主菜单
     except ValueError:  # 用户输入的工资不全是数字，提示用户，并重新调用该函数。
         print("\033[47;31m 输入的工资格式错误！ \033[0m")
         return register(username, password)
