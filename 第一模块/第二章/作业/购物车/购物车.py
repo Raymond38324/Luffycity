@@ -97,7 +97,6 @@ def login(username, password):
 user_info = json.load(open('user_date.json', "r", encoding="utf8"))  # 读取所有用户信息
 username = input("输入用户名:")
 password = input("输入密码:")
-
 if username not in user_info:  # 用户没有使用过该程序
     register(username, password)  # 调用注册函数
 else:  # 用户使用过该程序
