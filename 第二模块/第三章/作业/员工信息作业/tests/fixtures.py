@@ -4,9 +4,10 @@ import pytest
 
 @pytest.fixture
 def date():
-    date = open("staff_table.bak", "r", encoding="utf8")
+    f = open("staff_table.bak", "r", encoding="utf8")
+    date = [i.split(",") for i in f ]
     yield date
-    date.close()
+    f.close()
 
     # with open("../staff_table.bak","r",encoding="utf-8") as f:
     #     with open("staff_table","w",encoding="utf-8") as f_new:

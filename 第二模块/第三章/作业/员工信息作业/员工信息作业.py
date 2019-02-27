@@ -24,7 +24,7 @@ def add_user(date, sql):
 
 
 def delete_user(date, sql):
-    index_lst = eval("[i for i,j in enumeate(date) if j[{}] {} {}]".format(relationship.get(sql[0]), sql[1], sql[2]))
+    index_lst = eval("[i for i,j in enumerate(date) if j[{}] {} {}]".format(relationship.get(sql[0]), sql[1], sql[2]))
 
     def delete(index):
         date.pop(index)
@@ -41,9 +41,6 @@ def delete_user(date, sql):
 def find_user(date, sql):
     if isinstance(sql['select'], list):
         pass
-    if sql.get("tiaojian"):
-        index_list = eval(
-            "[i for i,j in enumeate(date) if j[{}] {} {}]".format(relationship.get(sql[0]), sql[1], sql[2]))
     else:
         index_list = list(range(8))
     display(index_list, sql)
@@ -57,37 +54,46 @@ def edit_user(date, index_list, sql):
     write_to_file(date)
 
 
-def parse_date(date_in):
-    parsed_date = date_in.split(" ")
+def parse_date(sql,date):
+    parsed_date = sql.split(" ")
     mode = parsed_date[0]
-    if mode == "delete" or mode == "find":
+    date_index_list = []
+    for i,j in enumerate(date):
+        if eval('j[relationship[parsed_date[-3]]] {} "{}"'.format(parsed_date[-2],parsed_date[-1])):
+           date_index_list.append(i)
+            
+
+    if mode == "delete" or mode == "find" or mode == "edit":
         select = parsed_date[1]
         if select != "*":
-            select_list = select.split(",")
-            index_list = eval(
-                "[i for i,j in enumeate(date) if j[{}] {} {}]".format(relationship.get(select_list[0]), select_list[1],
-                                                                      select_list[2]))
+            select_field_list = [relationship[i] for i in select.split(",")]
         else:
-            index_list = list(range(len(date_in)))
-        factor = parsed_date[-3:]
+            select_field_list = list(range(6))
         res = {
-            "index_list": index_list,
-            "factor": factor,
+            "mode":mode,
+            "index_list": date_index_list,
+            "choice_field": select_field_list,
         }
+        return res
+
     elif parsed_date[0] == "add":
-        pass
-    elif parsed_date[0] == "edit":
-        pass
+        res  = {
+            "mode":"add",
+            "date":parsed_date[1:],
+            }
+        
     else:
-        raise ValueError("输入的sl")
+
+        raise ValueError
 
 
-def main(file_date):
-    choice = input(">>>>>:")
-    parse_date(date_in=choice)
+def main(file_date,sql):
+    sql = sql.replae("like","in")
+    res = parse_date(sql,file_date)
 
 
 if __name__ == '__main__':
     with open("staff_table") as f:
-        date = f.readlines()
-        main(file_date=date)
+        date = [i.split(',') for i in f]
+    sql = input(">>>>>:")
+    main(date,sql)
