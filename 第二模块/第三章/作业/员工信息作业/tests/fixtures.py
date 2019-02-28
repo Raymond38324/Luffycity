@@ -4,11 +4,13 @@ import pytest
 
 @pytest.fixture
 def date():
-    f = open("staff_table.bak", "r", encoding="utf8")
-    date = [i.split(",") for i in f ]
-    yield date
-    f.close()
+    with open("staff_table.bak", "r", encoding="utf8") as f:
+        date = [i.split(",") for i in f]
+        return date
 
-    # with open("../staff_table.bak","r",encoding="utf-8") as f:
-    #     with open("staff_table","w",encoding="utf-8") as f_new:
-    #         yield
+
+@pytest.fixture
+def test_date():
+    with open("staff_table.test", "r", encoding="utf8") as f:
+        test_date = [i.split(",") for i in f]
+        return test_date
