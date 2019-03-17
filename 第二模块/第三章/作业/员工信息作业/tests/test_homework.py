@@ -95,7 +95,8 @@ class TestAdd:
         res = add_user(date, add_date)
         assert len(res) == 11
         assert res[-1][0] == 11
-        assert res[-1][1:] == ['Mosson', '18', '13678789527', 'IT', '2018-12-11']
+        assert res[-1][1:] == ['Mosson', '18',
+                               '13678789527', 'IT', '2018-12-11']
         write_to_file(res, filename="staff_table.test")
 
     def test_add_to_file_success(self, test_date):
@@ -106,7 +107,8 @@ class TestAdd:
         """
         assert len(test_date) == 11
         assert test_date[-1][0] == "11"
-        assert test_date[-1][1:] == ['Mosson', '18', '13678789527', 'IT', '2018-12-11']
+        assert test_date[-1][1:] == ['Mosson',
+                                     '18', '13678789527', 'IT', '2018-12-11']
 
 
 class TestDelete:
@@ -128,7 +130,7 @@ class TestDelete:
         测试写入文件的信息是否满足预期
         """
         assert len(test_date) == 8
-        assert [int(i[0]) for i in test_date] == list(range(1,9))
+        assert [int(i[0]) for i in test_date] == list(range(1, 9))
 
 
 class TestEdit:
@@ -146,11 +148,18 @@ class TestEdit:
         sql1 = 'update staff_table set dept="Market" where dept = "IT"'
         sql1 = sql1.replace("\"", "")
         res1 = parse_date(sql1, date)
-        assert res1 == {"mode": "update", "index_list": [0, 2, 4, 8], "edit_field": {"dept": "Market"}}
+        assert res1 == {
+            "mode": "update", "index_list": [
+                0, 2, 4, 8], "edit_field": {
+                "dept": "Market"}}
         sql2 = 'update staff_table set age=25 where name = "Alex Li"'
         sql2 = sql2.replace("\"", "")
         res2 = parse_date(sql2, date)
-        assert res2 == {"mode": "update", "index_list": [0], "edit_field": {"age": "25"}}
+        assert res2 == {
+            "mode": "update",
+            "index_list": [0],
+            "edit_field": {
+                "age": "25"}}
         write_to_file(res, filename="staff_table.test")
 
     def test_edit_to_file(self, test_date):

@@ -19,7 +19,9 @@ _relationship = {
     5: "enroll_data"
 }
 # 用来判断输入的信息字段是否全部合法的函数
-check_field = lambda x, y: all([i in y for i in x])
+
+
+def check_field(x, y): return all([i in y for i in x])
 
 
 def write_to_file(date, filename="staff_table"):
@@ -47,7 +49,8 @@ def add_user(date, insert_date):
     :return: <list>处理过的所有数据
     """
     # 如果文件的最后一行的最后一个字符没有换行符，加上换行符
-    if not date[-1][-1].endswith("\n"): date[-1][-1] += "\n"
+    if not date[-1][-1].endswith("\n"):
+        date[-1][-1] += "\n"
     # 在要插入的数据的最前面加上序号
     insert_date.insert(0, len(date) + 1)
     date.append(insert_date)
@@ -135,22 +138,23 @@ def get_index_list(parsed_date, date):
         # 如果like在语句列表中，说明是模糊匹配，用in来判断是否符合条件
         index_like = parsed_date.index("like")
         for i, j in enumerate(date):
-            if ' '.join(parsed_date[index_like + 1:]) in j[relationship.get(parsed_date[index_where + 1])]:
+            if ' '.join(
+                    parsed_date[index_like + 1:]) in j[relationship.get(parsed_date[index_where + 1])]:
                 date_index_list.append(i)
     else:
         # 如果=在语句列表中，将其替换成 == 方便后面使用
-        if "=" in parsed_date: parsed_date[parsed_date.index("=")] = "=="
+        if "=" in parsed_date:
+            parsed_date[parsed_date.index("=")] = "=="
         # 这里对age做了特殊处理 不然会有类似“22” > "10000" 的错误结果
         if "age" in parsed_date[index_where:]:
             for i, j in enumerate(date):
-                if eval('int(j[2]) {} int({})'.format(parsed_date[index_where + 2], parsed_date[index_where + 3])):
+                if eval('int(j[2]) {} int({})'.format(
+                        parsed_date[index_where + 2], parsed_date[index_where + 3])):
                     date_index_list.append(i)
         else:
             for i, j in enumerate(date):
-                if eval('j[relationship[parsed_date[index_where+1]]] {} "{}"'.format(parsed_date[index_where + 2],
-                                                                                     ' '.join(
-                                                                                         parsed_date[
-                                                                                         index_where + 3:]))):
+                if eval('j[relationship[parsed_date[index_where+1]]] {} "{}"'.format(
+                        parsed_date[index_where + 2], ' '.join(parsed_date[index_where + 3:]))):
                     date_index_list.append(i)
     return date_index_list
 
@@ -167,13 +171,15 @@ def parse_date(sql, date):
     # 获取接下来要进行的操作模式的值
     mode = parsed_date[0]
     # 如果where在列表中说明是查找操作，获取满足条件的索引
-    date_index_list = get_index_list(parsed_date[1:], date) if "where" in parsed_date else []
+    date_index_list = get_index_list(
+        parsed_date[1:], date) if "where" in parsed_date else []
     if mode == "find":
         # 生成一个包含所有已选择字段的列表
         select = parsed_date[1].split(",")
         if select[0] != "*":
             # 如果选择的不是* 而且选择的所有字段都合法，生成选择的字段对应的索引的列表
-            if not check_field(select, relationship): raise ValueError
+            if not check_field(select, relationship):
+                raise ValueError
             select_field_list = [relationship[i] for i in select]
         else:
             # 如果选择的是*，则生成一个包含所有字段索引的列表
@@ -197,7 +203,8 @@ def parse_date(sql, date):
         # 如果是增加模式，而且手机号不重复并且数据合理，返回要增加的数据
         add_date = parsed_date[2].split(',')
         print([add_date[-3] != i[-3] for i in date])
-        if len(add_date) != 5 or not all([add_date[-3] != i[-3] for i in date]):
+        if len(add_date) != 5 or not all(
+                [add_date[-3] != i[-3] for i in date]):
             raise ValueError
         else:
             res = {
@@ -207,8 +214,10 @@ def parse_date(sql, date):
         return res
     elif mode == "update":
         # 如果是更新模式 返回一个包含要修改的所有字段和值的字典
-        edit_field_list = parsed_date[parsed_date.index("set") + 1:parsed_date.index("where")]
-        edit_field = {i.split("=")[0]: i.split("=")[1] for i in edit_field_list}
+        edit_field_list = parsed_date[parsed_date.index(
+            "set") + 1:parsed_date.index("where")]
+        edit_field = {i.split("=")[0]: i.split("=")[1]
+                      for i in edit_field_list}
         res = {
             "mode": mode,
             "index_list": date_index_list,
@@ -236,11 +245,17 @@ def main(file_date, sql):
         if res["mode"] == "add":
             date_fin = add_user(file_date, res.get("date"))
         elif res["mode"] == "find":
-            find_user(file_date, res.get("index_list"), res.get("choice_field"))
+            find_user(
+                file_date,
+                res.get("index_list"),
+                res.get("choice_field"))
         elif res["mode"] == "del":
             date_fin = delete_user(file_date, res.get("index_list"))
         elif res["mode"] == "update":
-            date_fin = edit_user(date, res.get("index_list"), res.get("edit_field"))
+            date_fin = edit_user(
+                date,
+                res.get("index_list"),
+                res.get("edit_field"))
         # 如果没有异常，将处理后的数据写入文件
         write_to_file(date_fin)
     except ValueError:
