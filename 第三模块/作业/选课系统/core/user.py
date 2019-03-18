@@ -3,6 +3,7 @@ import pickle
 from bin.metas import test_log, Base
 from .school import Course
 
+
 class User(Base):
     def __init__(self, name, password, age, sex):
         super().__init__(name)
@@ -25,6 +26,10 @@ class Student(User):
 
 class Teacher(User):
 
+    def __init__(self, name, password, age, sex, school):
+        super().__init__(name, password, age, sex)
+        self.school = school
+
     def manage_classes(self):
         pass
 
@@ -39,12 +44,12 @@ class Teacher(User):
 
 
 class Administrator(User):
-    def add_teacher(self,*args):
+    def add_teacher(self, shcool, *args):
         name, password, age, sex = args
-        Teacher(name,password,age,sex)
+        Teacher(name, password, age, sex, shcool)
 
-    def add_courses(self,*args):
-        pass
+    def add_courses(self, *args):
+        Course(*args)
 
-    def add_class(self):
-        pass
+    def add_class(self, *args):
+        name, = args
