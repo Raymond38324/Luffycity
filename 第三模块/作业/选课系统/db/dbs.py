@@ -1,21 +1,21 @@
 # encoding: utf-8
 from os import listdir
+from bin.metas import AutoProperty
 
 
-class All_db(object):
+class All_db(object, metaclass=AutoProperty):
 
-    @property
     def all_class(self):
         return listdir('db/classes')
 
-    @property
     def all_students(self):
         return listdir('db/student')
 
-    @property
     def all_teachers(self):
         return listdir('db/teacher')
 
-    @property
     def all_admin(self):
         return listdir('db/administrator')
+
+    def all_school(self):
+        return listdir('db/school')

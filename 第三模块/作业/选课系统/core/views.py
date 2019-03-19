@@ -6,17 +6,12 @@ from .school import School, Classes, Course
 school_beijing = pickle.load(open('db/school/北京校区', 'rb'))
 school_shanghai = pickle.load(open('db/school/上海校区', 'rb'))
 
-def check_password(db_passwd,input_passwd):
-    return db_passwd == input_passwd
+check_pwd = lambda db_passwd, input_passwd: db_passwd == input_passwd
 
 
 class BaseView(object):
-    def __init__(self, current_user, passwd):
-        if current_user.password == passwd:
-            self.user = current_user
-        else:
-            print("密码输入错误")
-            exit()
+    def __init__(self, user):
+        self.user = user
 
 
 class TeacherView(BaseView):
