@@ -10,37 +10,63 @@ from setting import BUFFER, HOST, PORT
 
 
 def input_int(string):
+    """
+    string <int>:input提示的字符串 
+    return <int>
+    """
+    #获取用户输入
     res = input(string).strip()
     if res.isdigit():
+        # 如果是数字，返回
         return int(res)
     else:
+        # 不是数字则提示用户重新输入
         return input_int(string)
 
 
 class FtpClient:
-
+    # FTP客户端类
     def __init__(self, name, password, host_addr):
+        """
+        name <str>；用户名
+        password <str>:密码
+        host_adr <tuple>:(HOST,PORT) ip地址，端口号
+        """
         self.name = name
         self.password = password
         self.host_addr = host_addr
 
     def __enter__(self):
+        """
+        实现了上下文协议，在生成实例的时候，建立TCP连接
+        """
+        # 初始化soket对象
         self.coon = socket(AF_INET, SOCK_STREAM)
+        # 建立TCP连接
         self.coon.connect(self.host_addr)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        with 体里的语句执行结束后，自动断开连接
+        """
         self.coon.close()
 
     def run(self):
+        """
+        客户端的主程序，一个功能分发器。和服务端通过socket通信，并且调用各种方法
+        """
+        方法的字典，储存了方法的内存地址，方便调用
         func_dic = {
             "upload": self.upload,
             "download": self.download,
             "cmd_recv": self.parse_data,
         }
 
-        while True:
+        while 1:
+            # 循环接收服务端发送的报头，根据报头的mode字段,分发各种功能
             data = self.struct_recv()
+            ## 如果报头中没有exit这个key，运行。包含exit时运行结束
             if not data.get("exit"):
                 func_dic.get(data.get("mode"))(data)
             else:
@@ -48,17 +74,34 @@ class FtpClient:
                 break
 
     def struct_send(self, input_dic):
+        """
+        input_dic<dict>:报头
+        """
+        # 序列化字典，并编码成二进制
         data = json.dumps(input_dic).encode("utf8")
+        # 发送数据的长度，防止黏包
         self.coon.send(struct.pack('i', len(data)))
+        # 发送报头
         self.coon.send(data)
 
     def struct_recv(self):
+        """
+        接受报头数据的函数，返回反序列化后的字典
+        return <dict>
+        """
         recv = self.coon.recv(4)
+        # 接收报头的长度
         recv_len = struct.unpack('i', recv)[0]
+        # 解码
         recv_data = json.loads(self.coon.recv(recv_len).decode('utf8'))
+        # 反序列化
         return recv_data
 
     def parse_data(self, recv_data):
+        """
+        recv_data<str>:执行结果
+        解析发送的命令的执行结果，和发送命令，
+        """
         print(recv_data.get('message'))
         while True:
             print("""
@@ -70,49 +113,66 @@ class FtpClient:
                   5. 输入 pwd 查看当前所在目录
                   6. 输入 mkdir [目录名]　创建目录
                   7. 输入 rm [文件名] 删除文件
-                  7．输入 exit 退出
+                  8．输入 exit 退出
                   """
                   )
+            接收用户输入的命令
             cmd = input(">>>")
+            如果是符合标准的除了download 和upload 的命令，直接讲命令发送到服务端，由服务端负责解析
             if re.search(r'^(ll|cd|pwd|exit|mkdir|rm)', cmd):
                 self.struct_send({"mode": "cmd", "value": cmd})
                 break
+            # 如果是下载文件的命令
             elif 'download' in cmd:
                 try:
                     mode, filename = cmd.split(" ")
                     data = {"mode": mode, "filename": filename}
+                    # 如果文件在本地存在
                     if os.path.exists("Upload_dir/%s" % filename):
                         print("文件已存在是否断点续传？[y]/n")
                         choice = input(">>>")
                         if choice == "y":
+                           #  如果选择断点续传，在报头中加入本地的文件大小
                             data["filesize"] = os.path.getsize(
-                                "Upload_dir/%s" % filename)
+                                "Upload_dir/%s" % filename
+                                # 发送报头)
                             self.struct_send(data)
                         else:
+                            # 发送报头
                             self.struct_send(data)
                     else:
                         self.struct_send(data)
                     break
                 except ValueError:
+                    # 如果一开始解包时失败，说明命令格式不正确
                     print("格式错误，正确格式　 [文件名]")
+            # 如果是上传文件的命令
             elif "upload" == cmd:
+                # 读取上传文件夹中的文件列表
                 file_lis = os.listdir('Upload_dir')
                 if file_lis:
+                    # 如果上传文件夹中有文件或者，打印文件名和序号选择要上传的文件
                     for i, j in enumerate(file_lis, 1):
                         print("序号{}，文件名{}".format(i, j))
                     try:
+                        # 确保用户输入的是数字格式的文件
                         choice = input_int("输入序号选择文件:")
-                        print(">>>", choice, type(choice))
                         filename = file_lis[choice - 1]
                     except IndexError:
+                        # 如果索引错误，说明输入的序号有误
                         print("输入的序号错误")
                         continue
+                    # 如果选择的是存在的文件，发送上传文件的报头
                     self.struct_send({"mode": cmd, "filename": filename, "filesize": os.path.getsize(
                         "Upload_dir/%s" % filename)})
                     break
             print("输入格式错误，请重新输入！")
 
     def login(self):
+        """
+        登录函数
+        发送用户数据到服务端，服务端判断是否登录成功，并且给客户端发送结果
+        """
         data = {
             "mode": "login",
             "username": self.name,
@@ -120,6 +180,10 @@ class FtpClient:
         self.struct_send(data)
 
     def register(self, space):
+        """
+        space<int>:用户自定义的空间容量
+        注册函数，发送给服务端，注册用户需要的数据
+        """
         data = {
             "mode": "register",
             "username": self.name,
@@ -128,15 +192,23 @@ class FtpClient:
         self.struct_send(data)
 
     def download(self, head):
+        """
+        head<dict>:服务端发送的mode为download的数据
+        """
+        # 初始化md5对象，用于计算文件的md5保证文件的完整性
         md5 = hashlib.md5()
+        # 获取文件名，文件路径，文件的打开方式
         file_name = head.get("filename")
         file_path = 'Upload_dir/' + file_name
-
+        # 断点续传时打开模式为ab,正常下载时，打开模式为wb
         open_type = head.get("tran_type")
         file_size = head.get("filesize")
+        # 如果是断点续传，获取本地文件的大小
         start = int(head.get("exists_size")) if head.get("exists_size") else 0
+        # 如果本地文件大小和服务器文件大小一样，说明下载完成，退出程序
         if start == file_size:
             return
+        # 新建或追加打开文件，while循环里接收全部数据，写入文件
         with open(file_path, open_type) as f:
             while start < file_size:
                 data = self.coon.recv(BUFFER)
@@ -144,11 +216,12 @@ class FtpClient:
                 md5.update(data)
                 num = int((start / file_size) * 100)
                 start += len(data)
+                # 生成进度条,手撸的
                 stdout.write('{}/100{}'.format(num, "*" * num + '\r'))
                 stdout.flush()
         stdout.write('100/100{}'.format("*" * 100 + '\r'))
         stdout.flush()
-
+        # 发送文件的md5
         self.struct_send({"mode": "md5", "value": md5.hexdigest()})
 
     def upload(self, head):
@@ -196,7 +269,7 @@ if __name__ == '__main__':
             main(name, pass_word)
         elif choice == "2":
             name = input("输入用户名")
-            storage_space = input("输入个人空间容量(格式：数字)(单位G):")
+            storage_space = input_int("输入个人空间容量(格式：数字)(单位G):")
             while True:
                 passwd = input("输入密码:")
                 repect_passwd = input("再次输入密码:")
