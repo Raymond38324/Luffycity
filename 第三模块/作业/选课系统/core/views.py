@@ -40,7 +40,8 @@ class BaseView(object, metaclass=ABCMeta):
         """
         self.user = user
 
-    def add_role(self, iter_obj, return_list=True):
+    @staticmethod
+    def add_role(iter_obj, return_list=True):
         """
         :param iter_obj: <dict>{<str>:<obj>} 包含名称和实例的字典
         :return: <list>[<object>]
