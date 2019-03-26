@@ -14,7 +14,7 @@ def input_int(string):
     string <int>:input提示的字符串 
     return <int>
     """
-    #获取用户输入
+    # 获取用户输入
     res = input(string).strip()
     if res.isdigit():
         # 如果是数字，返回
@@ -56,7 +56,7 @@ class FtpClient:
         """
         客户端的主程序，一个功能分发器。和服务端通过socket通信，并且调用各种方法
         """
-        方法的字典，储存了方法的内存地址，方便调用
+        # 方法的字典，储存了方法的内存地址，方便调用
         func_dic = {
             "upload": self.upload,
             "download": self.download,
@@ -116,9 +116,9 @@ class FtpClient:
                   8．输入 exit 退出
                   """
                   )
-            接收用户输入的命令
+            # 接收用户输入的命令
             cmd = input(">>>")
-            如果是符合标准的除了download 和upload 的命令，直接讲命令发送到服务端，由服务端负责解析
+            # 如果是符合标准的除了download 和upload 的命令，直接讲命令发送到服务端，由服务端负责解析
             if re.search(r'^(ll|cd|pwd|exit|mkdir|rm)', cmd):
                 self.struct_send({"mode": "cmd", "value": cmd})
                 break
@@ -132,10 +132,11 @@ class FtpClient:
                         print("文件已存在是否断点续传？[y]/n")
                         choice = input(">>>")
                         if choice == "y":
-                           #  如果选择断点续传，在报头中加入本地的文件大小
+                            #  如果选择断点续传，在报头中加入本地的文件大小
                             data["filesize"] = os.path.getsize(
                                 "Upload_dir/%s" % filename
-                                # 发送报头)
+                            )
+                            # 发送报头
                             self.struct_send(data)
                         else:
                             # 发送报头
@@ -166,6 +167,9 @@ class FtpClient:
                     self.struct_send({"mode": cmd, "filename": filename, "filesize": os.path.getsize(
                         "Upload_dir/%s" % filename)})
                     break
+                else:
+                    print("上传文件夹内无文件")
+                    continue
             print("输入格式错误，请重新输入！")
 
     def login(self):
@@ -173,6 +177,9 @@ class FtpClient:
         登录函数
         发送用户数据到服务端，服务端判断是否登录成功，并且给客户端发送结果
         """
+        sha256 = hashlib.sha3_256()
+        sha256.update(self.password.encode('utf8'))
+        self.password = sha256.hexdigest()
         data = {
             "mode": "login",
             "username": self.name,
@@ -193,7 +200,7 @@ class FtpClient:
 
     def download(self, head):
         """
-        head<dict>:服务端发送的mode为download的数据
+        head<dict>:服务端发送的mode为download的报头
         """
         # 初始化md5对象，用于计算文件的md5保证文件的完整性
         md5 = hashlib.md5()
@@ -214,6 +221,7 @@ class FtpClient:
                 data = self.coon.recv(BUFFER)
                 f.write(data)
                 md5.update(data)
+                # 每次写入数据后，更新md5值　
                 num = int((start / file_size) * 100)
                 start += len(data)
                 # 生成进度条,手撸的
@@ -225,14 +233,21 @@ class FtpClient:
         self.struct_send({"mode": "md5", "value": md5.hexdigest()})
 
     def upload(self, head):
+        """
+        :param head: <dict>: 服务端发送的mode为upload的数据
+        """
+        # 初始化md5对象，用于计算文件的md5保证文件的完整性
         md5 = hashlib.md5()
+        # 获取文件名，文件路径，文件大小
         filename = head.get("filename")
         file_path = 'Upload_dir/' + filename
         file_size = head.get("filesize")
         start = 0
+        # while 循环里发送所有文件数据　
         with open(file_path, 'rb') as f:
             while start < file_size:
                 data = f.read(BUFFER)
+                # 每次读取数据后，更新md5值　
                 md5.update(data)
                 self.coon.send(data)
                 num = int((start / file_size) * 100)
@@ -241,33 +256,46 @@ class FtpClient:
                 stdout.flush()
         stdout.write('{}100/100'.format("*" * 100 + '\r'))
         stdout.flush()
-
+        # 发送所有数据后等待服务端的md5数据,判断上传文件的完整性．
         recv_md5 = self.struct_recv()
         if recv_md5["value"] == md5.hexdigest():
             send_message = {"status": True}
         else:
             send_message = {"status": False}
+        # 发送数据　告诉服务器　文件内容是否正确
         self.struct_send(send_message)
 
 
 def main(user_name, passwd, space=None):
+    """
+    :param user_name:<str> 用户名
+    :param passwd: <str>　密码
+    :param space: <int>　分配的储存空间
+    """
+    # 实例化一个客户端对象
     with FtpClient(user_name, passwd, (HOST, PORT)) as client:
+        # 如果space不为None,则是注册
         if space:
             client.register(space)
         else:
+            # space 为None则为登陆
             client.login()
+        # 主函数开始执行
         client.run()
 
 
 if __name__ == '__main__':
-    while True:
+    while 1:
         print(" １.登陆 \n ２.注册\n 3 .退出")
+        # 接收用户输入，根据输入的值判断模式
         choice = input("输入序号选择功能：")
         if choice == "1":
+            # 登陆的逻辑
             name = input("输入用户名").strip()
             pass_word = input("输入密码：").strip()
             main(name, pass_word)
         elif choice == "2":
+            # 注册的逻辑
             name = input("输入用户名")
             storage_space = input_int("输入个人空间容量(格式：数字)(单位G):")
             while True:
@@ -277,4 +305,5 @@ if __name__ == '__main__':
                     break
             main(name, passwd, space=storage_space)
         elif choice == "3":
+            # 退出程序
             break
